@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CPAN226 Email Test</title>
+</head>
+<body>
+
+    <h1>CPAN226 Email Test</h1>
+
+    <form method="POST" action="/send-email/" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <label>Sender:</label>
+        <input type="email" name="sender" required>
+        <br><br>
+
+        <label>Receiver:</label>
+        <input type="email" name="receiver" required>
+        <br><br>
+
+        <label>CC:</label>
+        <input
+            type="text"
+            name="cc"
+            placeholder="email1@example.com, email2@example.com"
+        >
+        <br><br>
+
+        <label>Subject:</label>
+        <input type="text" name="subject" required>
+        <br><br>
+
+        <label>Message:</label>
+        <textarea name="message" required></textarea>
+        <br><br>
+
+        <label>Attachment:</label>
+        <input type="file" name="attachment">
+        <br><br>
+
+        <button type="submit">Send Email</button>
+    </form>
+
+</body>
+</html>
