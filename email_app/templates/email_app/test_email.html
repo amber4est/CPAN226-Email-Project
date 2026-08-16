@@ -1,45 +1,286 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>CPAN226 Email Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CPAN226 Email Application</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f2f4f7;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 700px;
+            margin: 50px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        input[type="email"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #4285f4;
+            box-shadow: 0 0 4px rgba(66, 133, 244, 0.3);
+        }
+
+        textarea {
+            min-height: 180px;
+            resize: vertical;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 8px 0;
+        }
+
+        .help-text {
+            display: block;
+            margin-top: 5px;
+            color: #777;
+            font-size: 13px;
+        }
+
+        .send-button {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 6px;
+            background-color: #4285f4;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .send-button:hover {
+            background-color: #3367d6;
+        }
+
+        .send-button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+
+        .status {
+            display: none;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .success {
+            display: block;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .error {
+            display: block;
+            background-color: #ffebee;
+            color: #c62828;
+        }
+    </style>
 </head>
+
 <body>
 
-    <h1>CPAN226 Email Test</h1>
+<div class="container">
 
-    <form method="POST" action="/send-email/" enctype="multipart/form-data">
+    <h1>CPAN226 Email Application</h1>
+
+    <!-- Success / Error message -->
+    <div id="statusMessage" class="status"></div>
+
+    <form id="emailForm"
+          method="POST"
+          action="/send-email/"
+          enctype="multipart/form-data">
+
         {% csrf_token %}
 
-        <label>Sender:</label>
-        <input type="email" name="sender" required>
-        <br><br>
+        <div class="form-group">
+            <label for="sender">Sender Email</label>
 
-        <label>Receiver:</label>
-        <input type="email" name="receiver" required>
-        <br><br>
+            <input
+                type="email"
+                id="sender"
+                name="sender"
+                placeholder="sender@example.com"
+                required
+            >
+        </div>
 
-        <label>CC:</label>
-        <input
-            type="text"
-            name="cc"
-            placeholder="email1@example.com, email2@example.com"
-        >
-        <br><br>
+        <div class="form-group">
+            <label for="receiver">Receiver Email</label>
 
-        <label>Subject:</label>
-        <input type="text" name="subject" required>
-        <br><br>
+            <input
+                type="email"
+                id="receiver"
+                name="receiver"
+                placeholder="receiver@example.com"
+                required
+            >
+        </div>
 
-        <label>Message:</label>
-        <textarea name="message" required></textarea>
-        <br><br>
+        <div class="form-group">
+            <label for="cc">CC</label>
 
-        <label>Attachment:</label>
-        <input type="file" name="attachment">
-        <br><br>
+            <input
+                type="text"
+                id="cc"
+                name="cc"
+                placeholder="email1@example.com, email2@example.com"
+            >
 
-        <button type="submit">Send Email</button>
+            <span class="help-text">
+                Separate multiple email addresses with commas.
+            </span>
+        </div>
+
+        <div class="form-group">
+            <label for="subject">Subject</label>
+
+            <input
+                type="text"
+                id="subject"
+                name="subject"
+                placeholder="Enter email subject"
+                maxlength="200"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="message">Message</label>
+
+            <textarea
+                id="message"
+                name="message"
+                placeholder="Write your message here..."
+                maxlength="5000"
+                required
+            ></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="attachment">Attachment</label>
+
+            <input
+                type="file"
+                id="attachment"
+                name="attachment"
+            >
+
+            <span class="help-text">
+                Attachment is optional.
+            </span>
+        </div>
+
+        <button type="submit" id="sendButton" class="send-button">
+            Send Email
+        </button>
+
     </form>
+
+</div>
+
+
+<script>
+    const form = document.getElementById("emailForm");
+    const statusMessage = document.getElementById("statusMessage");
+    const sendButton = document.getElementById("sendButton");
+
+    form.addEventListener("submit", async function(event) {
+
+        
+        event.preventDefault();
+
+        
+        statusMessage.className = "status";
+        statusMessage.textContent = "";
+
+        // Disable button while sending
+        sendButton.disabled = true;
+        sendButton.textContent = "Sending...";
+
+        const formData = new FormData(form);
+
+        try {
+
+            const response = await fetch("/send-email/", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+
+                statusMessage.className = "status success";
+                statusMessage.textContent = data.message;
+
+                // Clear the form after successful email
+                form.reset();
+
+            } else {
+
+                statusMessage.className = "status error";
+                statusMessage.textContent = data.error;
+
+            }
+
+        } catch (error) {
+
+            statusMessage.className = "status error";
+            statusMessage.textContent =
+                "Unable to connect to the server.";
+
+        } finally {
+
+            sendButton.disabled = false;
+            sendButton.textContent = "Send Email";
+        }
+    });
+</script>
 
 </body>
 </html>
