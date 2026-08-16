@@ -1,5 +1,6 @@
 from django.core.mail import EmailMessage
 
+# send email message
 def send_email_message(
     sender,
     receiver,
@@ -8,6 +9,7 @@ def send_email_message(
     cc_recipients = None,
     attachment = None,
 ):
+    # email information
     email = EmailMessage(
         subject = subject,
         body = message,
@@ -16,6 +18,7 @@ def send_email_message(
         cc = cc_recipients or [],
     )
 
+    # check for attachment
     if attachment:
         email.attach(
             attachment.name,
@@ -23,4 +26,5 @@ def send_email_message(
             attachment.content_type,
         )
 
+    # send email
     email.send()

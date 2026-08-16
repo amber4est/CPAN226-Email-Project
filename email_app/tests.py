@@ -1,9 +1,11 @@
+# tests for checking validation and errors
 from django.test import TestCase
 from unittest.mock import patch
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 class SendEmailTests(TestCase):
 
+    # check if sending an email works
     @patch("email_app.views.send_email_message")
     def test_valid_email(self, mock_send):
         response = self.client.post(
@@ -23,6 +25,7 @@ class SendEmailTests(TestCase):
         )
         mock_send.assert_called_once()
 
+    # check missing subject
     def test_missing_required_field(self):
         response = self.client.post(
             "/send-email/",
@@ -37,6 +40,7 @@ class SendEmailTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("required", response.json()["error"])
 
+    # check with invalid sender emails
     def test_invalid_sender_email(self):
         response = self.client.post(
             "/send-email/",
@@ -54,6 +58,7 @@ class SendEmailTests(TestCase):
             "Invalid sender email address."
         )
 
+    # check with invalid receiver email
     def test_invalid_receiver_email(self):
         response = self.client.post(
             "/send-email/",
@@ -71,6 +76,7 @@ class SendEmailTests(TestCase):
             "Invalid receiver email address."
         )
 
+    # check with invalid cc emails
     def test_invalid_cc_email(self):
         response = self.client.post(
             "/send-email/",
@@ -86,6 +92,7 @@ class SendEmailTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("Invalid CC", response.json()["error"])
 
+    # check with with cc emails
     @patch("email_app.views.send_email_message")
     def test_multiple_cc_recipients(self, mock_send):
         response = self.client.post(
@@ -109,6 +116,7 @@ class SendEmailTests(TestCase):
             ["cc1@example.com", "cc2@example.com"]
         )
 
+    # check with an attachment
     @patch("email_app.views.send_email_message")
     def test_email_attachment(self, mock_send):
 
@@ -139,7 +147,8 @@ class SendEmailTests(TestCase):
             call_kwargs["attachment"].name,
             "test.txt"
         )
-
+    
+    # check with sending failure
     @patch("email_app.views.send_email_message")
     def test_email_sending_failure(self, mock_send):
         mock_send.side_effect = Exception("SMTP connection failed")

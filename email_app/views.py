@@ -5,20 +5,26 @@ from django.core.exceptions import ValidationError
 from .services import send_email_message
 from django.core.mail import BadHeaderError
 
+# sending an email
 def send_email(request):
+    # check if POST or not
     if request.method != "POST":
+        # error message
         return JsonResponse(
             {"error": "Only POST requests are allowed."},
             status=405
         )
 
+    # proceed with sending email
+
+    # get email information
     sender = request.POST.get("sender", "").strip()
     receiver = request.POST.get("receiver", "").strip()
     subject = request.POST.get("subject", "").strip()
     message = request.POST.get("message", "").strip()
     cc = request.POST.get("cc", "").strip()
 
-    # Check required fields
+    # check required fields
     if not sender or not receiver or not subject or not message:
         return JsonResponse(
             {
@@ -29,7 +35,7 @@ def send_email(request):
             status=400
         )
 
-    # Validate sender email
+    # validate sender email
     try:
         validate_email(sender)
     except ValidationError:
@@ -38,7 +44,7 @@ def send_email(request):
             status=400
         )
 
-    # Validate receiver email
+    # validate receiver email
     try:
         validate_email(receiver)
     except ValidationError:
@@ -47,7 +53,7 @@ def send_email(request):
             status=400
         )
 
-    # Seperate CC recipients
+    # seperate CC recipients
     cc_recipients = []
 
     if cc:
@@ -57,7 +63,7 @@ def send_email(request):
             if email.strip()
         ]
 
-        # Validate every CC address
+        # validate every CC address
         for email in cc_recipients:
             try:
                 validate_email(email)
@@ -67,7 +73,7 @@ def send_email(request):
                     status=400
                 )
 
-    # Send email
+    # send email
     try:
         send_email_message(
             sender=sender,
@@ -78,21 +84,24 @@ def send_email(request):
             attachment=request.FILES.get("attachment"),
         )
 
+        # success message
         return JsonResponse(
             {"message": "Email sent successfully."}
         )
-    
+
+    # error message
     except BadHeaderError:
         return JsonResponse(
             {"error": "Invalid email header."},
             status=400
         )
-    
+    # exception/error message
     except Exception:
         return JsonResponse(
             {"error": "Failed to send email. Please try again."},
             status=500
         )
 
+# test email form
 def test_email_form(request):
     return render(request, "email_app/test_email.html")

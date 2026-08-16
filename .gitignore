@@ -1,3 +1,4 @@
+# files for github to ignore
 venv/
 .env
 __pycache__/
